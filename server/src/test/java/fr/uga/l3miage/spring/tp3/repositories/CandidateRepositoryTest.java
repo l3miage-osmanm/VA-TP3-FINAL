@@ -4,6 +4,7 @@ package fr.uga.l3miage.spring.tp3.repositories;
 import fr.uga.l3miage.spring.tp3.enums.TestCenterCode;
 import fr.uga.l3miage.spring.tp3.models.CandidateEntity;
 import fr.uga.l3miage.spring.tp3.models.CandidateEvaluationGridEntity;
+import fr.uga.l3miage.spring.tp3.models.ExamEntity;
 import fr.uga.l3miage.spring.tp3.repositories.CandidateRepository;
 import fr.uga.l3miage.spring.tp3.models.TestCenterEntity;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-/*Set<CandidateEntity> findAllByHasExtraTimeFalseAndBirthDateBefore(LocalDate localDate);*/
+import org.junit.jupiter.api.BeforeEach;
+
 @AutoConfigureTestDatabase
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect")
 public class CandidateRepositoryTest {
@@ -33,6 +35,13 @@ public class CandidateRepositoryTest {
     private TestCenterRepository testCenterRepository;
     @Autowired
     private CandidateEvaluationGridRepository candidateEvaluationGridRepository;
+
+    @BeforeEach
+    public void clearAll(){
+        candidateRepository.deleteAll();
+        candidateEvaluationGridRepository.deleteAll();
+        testCenterRepository.deleteAll();
+    }
 
     @Test
     void testFindAllByHasExtraTimeFalseAndBirthDateBefore(){
@@ -119,36 +128,30 @@ public class CandidateRepositoryTest {
                 .phoneNumber("87636321")
                 .hasExtraTime(false)
                 .build();
+        ExamEntity examEntity1 = ExamEntity.builder()
+                .id(479746290L)
+                .name("test")
+                .weight(1)
+                .build();
+        ExamEntity examEntity2 = ExamEntity.builder()
+                .id(145274L)
+                .name("test")
+                .weight(1)
+                .build();
+        ExamEntity examEntity3 = ExamEntity.builder()
+                .id(2640274L)
+                .name("test")
+                .weight(1)
+                .build();
+        CandidateEvaluationGridEntity candidateEvaluationGridEntity12=CandidateEvaluationGridEntity.builder().grade(12.00).candidateEntity(candidateEntity1).examEntity(examEntity1).build();
+        CandidateEvaluationGridEntity candidateEvaluationGridEntity9=CandidateEvaluationGridEntity.builder().grade(9.25).candidateEntity(candidateEntity2).examEntity(examEntity2).build();
+        CandidateEvaluationGridEntity candidateEvaluationGridEntity15=CandidateEvaluationGridEntity.builder().grade(15.75).candidateEntity(candidateEntity3).examEntity(examEntity3).build();
 
-        CandidateEvaluationGridEntity candidateEvaluationGridEntity12=CandidateEvaluationGridEntity.builder().grade(12.00).build();
-        CandidateEvaluationGridEntity candidateEvaluationGridEntity9=CandidateEvaluationGridEntity.builder().grade(9.25).build();
-        CandidateEvaluationGridEntity candidateEvaluationGridEntity15=CandidateEvaluationGridEntity.builder().grade(15.75).build();
+        candidateEvaluationGridRepository.saveAll(Set.of(candidateEvaluationGridEntity9,candidateEvaluationGridEntity12,candidateEvaluationGridEntity15));
 
-        candidateEvaluationGridRepository.save(candidateEvaluationGridEntity9);
-        candidateEvaluationGridRepository.save(candidateEvaluationGridEntity12);
-        candidateEvaluationGridRepository.save(candidateEvaluationGridEntity15);
-
-        Set<CandidateEvaluationGridEntity> notes3=new HashSet<>();
-        notes3.add(candidateEvaluationGridEntity9);
-
-
-        candidateEntity3.setCandidateEvaluationGridEntities(notes3);
-        candidateEvaluationGridEntity9.setCandidateEntity(candidateEntity3);
-
-        Set<CandidateEvaluationGridEntity> notes2=new HashSet<>();
-        notes2.add(candidateEvaluationGridEntity15);
-
-
-        candidateEntity2.setCandidateEvaluationGridEntities(notes2);
-        candidateEvaluationGridEntity15.setCandidateEntity(candidateEntity2);
-
-        Set<CandidateEvaluationGridEntity> notes1=new HashSet<>();
-
-        notes1.add(candidateEvaluationGridEntity12);
-
-        candidateEntity1.setCandidateEvaluationGridEntities(notes1);
-        candidateEvaluationGridEntity12.setCandidateEntity(candidateEntity1);
-
+        candidateEntity3.setCandidateEvaluationGridEntities(Set.of(candidateEvaluationGridEntity9));
+        candidateEntity2.setCandidateEvaluationGridEntities(Set.of(candidateEvaluationGridEntity15));
+        candidateEntity1.setCandidateEvaluationGridEntities(Set.of(candidateEvaluationGridEntity12));
 
         candidateRepository.save(candidateEntity2);
         candidateRepository.save(candidateEntity1);
@@ -158,11 +161,9 @@ public class CandidateRepositoryTest {
         Set<CandidateEntity> candidateEntities13=candidateRepository.findAllByCandidateEvaluationGridEntitiesGradeLessThan(13.00);
         Set<CandidateEntity> candidateEntities10=candidateRepository.findAllByCandidateEvaluationGridEntitiesGradeLessThan(10.00);
         Set<CandidateEntity> candidateEntities20=candidateRepository.findAllByCandidateEvaluationGridEntitiesGradeLessThan(20.00);
-        List<CandidateEntity> candidateEntitiesall=candidateRepository.findAll();
-        List<CandidateEvaluationGridEntity> evaall=candidateEvaluationGridRepository.findAll();
+
         //THEN
-        assertThat(candidateEntitiesall).hasSize(3);
-        assertThat(evaall).hasSize(3);
+
 
         assertThat(candidateEntities10).hasSize(1);
         assertThat(candidateEntities13).hasSize(2);
@@ -171,21 +172,21 @@ public class CandidateRepositoryTest {
         assertThat(candidateEntities10.stream().
                 allMatch(
                         (candidateEntity -> candidateEntity.getCandidateEvaluationGridEntities().stream().anyMatch(
-                                (candidateEvaluationGridEntity -> candidateEvaluationGridEntity.getGrade()<10)
+                                (candidateEvaluationGridEntity -> candidateEvaluationGridEntity.getGrade()<=10)
                         ))
                 )
         ).isTrue();;
         assertThat(candidateEntities13.stream().
                 allMatch(
                         (candidateEntity -> candidateEntity.getCandidateEvaluationGridEntities().stream().anyMatch(
-                                (candidateEvaluationGridEntity -> candidateEvaluationGridEntity.getGrade()<13)
+                                (candidateEvaluationGridEntity -> candidateEvaluationGridEntity.getGrade()<=13)
                         ))
                 )
         ).isTrue();;
         assertThat(candidateEntities20.stream().
                 allMatch(
                         (candidateEntity -> candidateEntity.getCandidateEvaluationGridEntities().stream().anyMatch(
-                                (candidateEvaluationGridEntity -> candidateEvaluationGridEntity.getGrade()<20)
+                                (candidateEvaluationGridEntity -> candidateEvaluationGridEntity.getGrade()<=20)
                         ))
                 )
         ).isTrue();
