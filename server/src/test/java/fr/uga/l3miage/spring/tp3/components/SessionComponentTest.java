@@ -1,5 +1,6 @@
 package fr.uga.l3miage.spring.tp3.components;
 
+import fr.uga.l3miage.spring.tp3.mappers.SessionMapper;
 import fr.uga.l3miage.spring.tp3.models.CandidateEntity;
 import fr.uga.l3miage.spring.tp3.models.EcosSessionEntity;
 import fr.uga.l3miage.spring.tp3.repositories.CandidateRepository;
@@ -15,6 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Optional;
 import fr.uga.l3miage.spring.tp3.exceptions.technical.CandidateNotFoundException;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
@@ -30,11 +33,10 @@ public class SessionComponentTest {
     private  EcosSessionProgrammationRepository ecosSessionProgrammationRepository;
     @MockBean
     private  EcosSessionProgrammationStepRepository ecosSessionProgrammationStepRepository;
-    /*  when(candidateRepository.findById(anyLong())).thenReturn(Optional.empty());
 
+    @SpyBean
+    private SessionMapper sessionMapper;
 
-        assertThrows(CandidateNotFoundException.class,()->candidateComponent.getCandidatById((264718L)));
-*/
     @Test
     void CreatedSessionNotFound(){
 
